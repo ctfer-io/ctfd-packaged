@@ -1,0 +1,40 @@
+name: Docker Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      PLUGIN_VERSION:
+        description: 'CTFd-chall-manager version'
+        required: true
+        default: '0.2.0'
+      CTFD_VERSION:
+        description: 'CTFd version'
+        required: true
+        default: '3.7.5'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3.8.0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@67a2d409c0a876cbe6b11854e3e25193efe4e62d # v6.12.0
+        with:
+          context: .
+          push: true
+          tags: ctferio/ctfd:${{ inputs.CTFD_VERSION }}-${{ inputs.PLUGIN_VERSION }}
+          build-args: |
+            PLUGIN_VERSION=${{ inputs.PLUGIN_VERSION }}
+            CTFD_VERSION=${{ inputs.CTFD_VERSION }}
