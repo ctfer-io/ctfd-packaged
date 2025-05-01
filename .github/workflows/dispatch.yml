@@ -79,5 +79,5 @@ jobs:
       image: ctferio/ctfd
       digest: ${{ needs.build.outputs.digest }}
     secrets:
-      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
-      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+      registry-username: ${{ secrets.DOCKER_USERNAME }}
+      registry-password: ${{ secrets.DOCKER_PASSWORD }}
