@@ -6,35 +6,79 @@ on:
       PLUGIN_VERSION:
         description: 'CTFd-chall-manager version'
         required: true
-        default: '0.2.0'
       CTFD_VERSION:
         description: 'CTFd version'
         required: true
-        default: '3.7.5'
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3.8.0
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
 
       - name: Login to Docker Hub
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Extract metadata (labels) for Docker
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        with:
+          images: ctferio/ctfd
+
+      - name: Git commit date
+        id: infos
+        run: |
+          # trim version prefix
+          version=${{ github.ref_name }}
+          version="${version#"v"}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          # output date per RFC 3339
+          date="$(git log -1 --format=%cd --date=format:%Y-%m-%dT%H:%M:%SZ)"
+          echo "date=$date" >> "$GITHUB_OUTPUT"
 
       - name: Build Docker image
-        uses: docker/build-push-action@67a2d409c0a876cbe6b11854e3e25193efe4e62d # v6.12.0
+        uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
+        id: build
         with:
           context: .
           push: true
+          sbom: true # may not produce SBOM in manifest if the image has no filesystem (e.g. "FROM scratch")
           tags: ctferio/ctfd:${{ inputs.CTFD_VERSION }}-${{ inputs.PLUGIN_VERSION }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PLUGIN_VERSION=${{ inputs.PLUGIN_VERSION }}
             CTFD_VERSION=${{ inputs.CTFD_VERSION }}
+
+  # This step calls the container workflow to generate provenance and push it to
+  # the container registry.
+  provenance-cm:
+    needs: [build]
+    permissions:
+      actions: read # for detecting the Github Actions environment.
+      id-token: write # for creating OIDC tokens for signing.
+      packages: write # for uploading attestations.
+    if: startsWith(github.ref, 'refs/tags/')
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    with:
+      image: ctferio/chall-manager
+      digest: ${{ needs.build.outputs.digest }}
+    secrets:
+      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
