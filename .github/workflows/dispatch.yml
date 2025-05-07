@@ -23,6 +23,19 @@ jobs:
       digest: ${{ steps.build.outputs.digest }}
 
     steps:
+      - name: Validate versions
+        id: versions
+        run: |
+          # trim version prefix
+          ctfd_version=${{ inputs.CTFD_VERSION }}
+          plugin_version=${{ inputs.PLUGIN_VERSION }}
+
+          ctfd_version="${ctfd_version#"v"}"
+          plugin_version="${plugin_version#"v"}"
+          
+          echo "ctfd_version=$ctfd_version" >> "$GITHUB_OUTPUT"
+          echo "plugin_version=$plugin_version" >> "$GITHUB_OUTPUT"
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -60,11 +73,11 @@ jobs:
           context: .
           push: true
           sbom: true # may not produce SBOM in manifest if the image has no filesystem (e.g. "FROM scratch")
-          tags: ctferio/ctfd:${{ inputs.CTFD_VERSION }}-${{ inputs.PLUGIN_VERSION }}
+          tags: ctferio/ctfd:${{ steps.versions.outputs.ctfd_version }}-${{ steps.versions.outputs.plugin_version }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            PLUGIN_VERSION=${{ inputs.PLUGIN_VERSION }}
-            CTFD_VERSION=${{ inputs.CTFD_VERSION }}
+            CTFD_VERSION=${{ steps.versions.outputs.ctfd_version }}
+            PLUGIN_VERSION=${{ steps.versions.outputs.plugin_version }}
 
   # This step calls the container workflow to generate provenance and push it to
   # the container registry.
