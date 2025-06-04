@@ -73,7 +73,9 @@ jobs:
           context: .
           push: true
           sbom: true # may not produce SBOM in manifest if the image has no filesystem (e.g. "FROM scratch")
-          tags: ctferio/ctfd:${{ steps.versions.outputs.ctfd_version }}-${{ steps.versions.outputs.plugin_version }}
+          tags: |
+            ctferio/ctfd:${{ steps.versions.outputs.ctfd_version }}-${{ steps.versions.outputs.plugin_version }}
+            ctferio/ctfd:latest
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CTFD_VERSION=${{ steps.versions.outputs.ctfd_version }}
