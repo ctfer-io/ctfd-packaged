@@ -3,4 +3,12 @@ FROM ctfd/ctfd:latest
 USER root
 RUN apt update && apt install -y git
 RUN git clone https://github.com/ctfer-io/ctfd-chall-manager.git /opt/CTFd/CTFd/plugins/ctfd-chall-manager
+
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+RUN opentelemetry-bootstrap -a install
+
+USER root
+COPY docker-entrypoint.sh /opt/CTFd/docker-entrypoint.sh
+RUN chmod +x /opt/CTFd/docker-entrypoint.sh
 USER 1001
