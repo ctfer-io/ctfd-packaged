@@ -2,7 +2,7 @@ FROM ctfd/ctfd:latest
 
 USER root
 RUN apt update && apt install -y git
-RUN git clone https://github.com/ctfer-io/ctfd-chall-manager.git /opt/CTFd/CTFd/plugins/ctfd-chall-manager
+RUN git clone https://github.com/ctfer-io/ctfd-chall-manager.git /opt/CTFd/CTFd/plugins/ctfd_chall_manager
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
