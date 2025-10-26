@@ -1,4 +1,4 @@
-ARG CTFD_VERSION=3.7.7
+ARG CTFD_VERSION=3.8.0
 
 # Download the plugin
 FROM alpine:3.18 AS downloader
@@ -6,7 +6,7 @@ FROM alpine:3.18 AS downloader
 RUN apk update && \
     apk add --no-cache wget tar
 
-ARG PLUGIN_VERSION=0.6.0
+ARG PLUGIN_VERSION=0.7.2
 ENV PLUGIN_VERSION=${PLUGIN_VERSION}
 
 RUN mkdir /ctfd_chall_manager && \
