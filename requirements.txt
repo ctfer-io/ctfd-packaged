@@ -1,5 +1,5 @@
 # OpenTelemetry
-opentelemetry-distro==0.60b1
+opentelemetry-distro==0.61b0
 opentelemetry-exporter-otlp==1.39.1
 opentelemetry-instrumentation-requests==0.60b1
 
