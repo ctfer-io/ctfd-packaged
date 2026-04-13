@@ -1,6 +1,6 @@
 # OpenTelemetry
 opentelemetry-distro==0.60b1
-opentelemetry-exporter-otlp==1.39.1
+opentelemetry-exporter-otlp==1.41.0
 opentelemetry-instrumentation-requests==0.60b1
 
 # PostgreSQL database
