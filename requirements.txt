@@ -4,4 +4,4 @@ opentelemetry-exporter-otlp==1.41.0
 opentelemetry-instrumentation-requests==0.62b0
 
 # PostgreSQL database
-psycopg2-binary==2.9.11
+psycopg2-binary==2.9.12
